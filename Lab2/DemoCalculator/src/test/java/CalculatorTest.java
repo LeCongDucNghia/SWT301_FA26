@@ -1,6 +1,8 @@
 import fu.de200635.Calculator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvFileSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -66,5 +68,17 @@ class CalculatorTest {
 
         // Assert
         assertEquals(expected, actual, "2 * 3 phải bằng 6");
+    }
+
+    @ParameterizedTest(name = "Test {index} => {0} * {1} = {2}")
+    @CsvFileSource(resources = "/data.csv", numLinesToSkip = 1)
+    @DisplayName("multiply: kiểm thử với nhiều bộ dữ liệu từ CSV")
+    void multiply_VariousInputs_ReturnsProduct(int a, int b, int expected) {
+// Arrange: a, b, expected do JUnit inject từ CSV
+// Act
+        int actual = calculator.multiply(a, b);
+// Assert
+        assertEquals(expected, actual,
+                () -> a + " * " + b + " phải bằng " + expected);
     }
 }
