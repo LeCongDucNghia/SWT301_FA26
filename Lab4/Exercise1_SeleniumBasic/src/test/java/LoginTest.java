@@ -7,6 +7,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -22,9 +24,10 @@ public class LoginTest {
 
     @BeforeAll
     static void setUp() {
-        WebDriverManager.chromedriver().setup();          // (1) tự tải chromedriver khớp Chrome
+        //WebDriverManager.chromedriver().setup();          // (1) tự tải chromedriver khớp Chrome
 
         ChromeOptions options = new ChromeOptions();       // (2) cấu hình trình duyệt
+        options.setBinary("C:\\Users\\Asus\\AppData\\Local\\Programs\\Opera GX\\opera.exe"); // (3) toi ko dung chrome
         Map<String, Object> prefs = new HashMap<>();
         prefs.put("profile.managed_default_content_settings.javascript", 2); // chặn JS
         options.setExperimentalOption("prefs", prefs);
@@ -72,5 +75,34 @@ public class LoginTest {
     @AfterAll
     static void tearDown() {
         if (driver != null) driver.quit();
+    }
+
+    @Order(3)
+    @ParameterizedTest(name = "[{index}] user=''{0}'' pass=''{1}'' → {2}")
+    @CsvSource({
+            "tomsmith,  SuperSecretPassword!, success",   // valid
+            "wronguser, SuperSecretPassword!, error",     // invalid username
+            "tomsmith,  wrongpassword,        error",     // invalid password
+            "'',        '',                   error"      // empty credentials
+    })
+    @DisplayName("Multiple login attempts using @CsvSource")
+    void testLoginWithMultipleParameters(String username, String password, String expectedResult) {
+        driver.get("https://the-internet.herokuapp.com/login");
+
+        driver.findElement(By.id("username")).sendKeys(username);
+        driver.findElement(By.id("password")).sendKeys(password);
+        driver.findElement(By.cssSelector("button[type='submit']")).click();
+
+        By messageLocator = expectedResult.equals("success")
+                ? By.cssSelector(".flash.success")
+                : By.cssSelector(".flash.error");
+
+        WebElement message = wait.until(ExpectedConditions.visibilityOfElementLocated(messageLocator));
+
+        if (expectedResult.equals("success")) {
+            assertTrue(message.getText().contains("You logged into a secure area!"));
+        } else {
+            assertTrue(message.getText().toLowerCase().contains("invalid"));
+        }
     }
 }
