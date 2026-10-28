@@ -10,13 +10,14 @@ import utils.ScreenshotExtension;
 @ExtendWith(ScreenshotExtension.class)
 public abstract class BaseTest {
     protected static WebDriver driver;
-    public static WebDriver getDriver() { return driver; }
 
     @BeforeAll
     public static void setUpBase() {
         driver = DriverFactory.createDriver();
         driver.manage().window().maximize();
     }
+
+    public static WebDriver getDriver() { return driver; }
 
     @AfterAll
     public static void tearDownBase() {
